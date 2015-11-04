@@ -1,0 +1,33 @@
+﻿@using Orchard.Utility.Extensions;
+@using Orchard.CalendarEvents.Models;
+@{
+    AddressPart addressPart = Model.ContentPart;
+}
+<div class="row">
+    <style>
+        .google-maps {
+            position: relative;
+            padding-bottom: 75%;
+            height: 0;
+            overflow: hidden;
+        }
+
+        .google-maps iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+    <h4>@Display(@Model.LocationName)</h4>
+    <p class="adr">
+        <div class="street-address">@Model.StreetAddress1</div>
+        <div class="street-address2">@Model.StreetAddress2</div>
+        <div class="street-address3">@Model.StreetAddress3</div>
+        <span class="locality">@Model.City</span>,
+        <span class="region">@Model.State</span>
+        <span class="postal-code">@Model.Zip</span>
+    </p>
+    <div class="google-maps">@Html.Raw(Model.MapEmbedCode)</div>
+</div>

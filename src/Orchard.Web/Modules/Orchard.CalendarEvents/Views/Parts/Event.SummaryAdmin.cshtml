@@ -1,0 +1,36 @@
+﻿@using Orchard.CalendarEvents.Models;
+@using NHibernate.Linq;
+@using Orchard.ContentManagement;
+@using Orchard.Core.Contents;
+@using Orchard.Utility.Extensions;
+@using Orchard.Workflows.Services;
+@{
+    EventPart contentItem = Model.ContentPart;
+}
+
+<p>
+    @T("Title"): <b>@contentItem.Title</b>
+</p>
+<p>
+    @T("Event Date"): <b>
+                          @if (contentItem.AllDayEvent)
+                          {
+                              <text>@contentItem.StartDate.ToShortDateString()</text>
+                          }
+                          else
+                          {
+                              <text>@contentItem.StartDate.ToString()</text>
+                          }             
+                      </b>
+    @if (contentItem.EndDate != contentItem.StartDate)
+    {
+        if (@contentItem.AllDayEvent)
+        {
+            <text> - <b> @contentItem.EndDate.ToShortDateString() </b></text>
+        }
+        else
+        {
+            <text> - <b> @contentItem.EndDate.ToString() </b></text>
+        }
+    }
+</p>

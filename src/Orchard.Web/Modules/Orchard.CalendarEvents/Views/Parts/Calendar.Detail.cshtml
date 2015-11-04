@@ -1,0 +1,247 @@
+﻿@using System.Globalization
+@using FluentNHibernate.Testing.Values
+@using Orchard.CalendarEvents.Extensions
+@using NHibernate.Mapping
+@using Orchard.Utility.Extensions;
+@using Orchard.CalendarEvents.Models;
+@{
+    var calendarPart = Model.ContentPart as CalendarPart;
+    var categories = Model.EventCategories as IEnumerable<CategoryPart>;
+    //var events = Model.Events as IEnumerable<EventPart> ?? new List<EventPart>();
+    //var orderedEvents = events.OrderBy(x => x.StartDate);
+    Script.Require("MomentJs").AtHead();
+    Script.Require("jQueryUI");
+    Script.Require("fullcalendar").AtHead();
+    Style.Require("fullcalendar").AtHead();
+    Style.Require("CalendarStyles");
+
+    string calendarTitle = calendarPart.Title;
+    Layout.Title = Layout.Title + calendarTitle;
+
+    var rootUrl = HttpContext.Current.Request.ApplicationPath;
+    if(rootUrl == "/") {
+        rootUrl = "";
+    }
+}
+<style>
+    /*.calendar table {
+        border: none;
+        padding: 0;
+        margin: 0;
+        width: 100%;
+    }*/
+    .fc th, .fc td, .fc td.fc-today {
+        border: none;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    .fc-toolbar h2 {
+        border-bottom: none;
+        line-height: inherit;
+    }
+
+    .fc-event-container {
+        position: relative;
+    }
+
+        .fc-event-container > a {
+            display: none;
+        }
+
+        .fc-event-container:before {
+            font-family: FontAwesome;
+            content: "\f111";
+            font-size: .6em;
+            position: absolute;
+            display: block;
+            bottom: -1.1em;
+            left: 41%;
+            color: #ee3224;
+        }
+
+    .fc-ltr .fc-basic-view .fc-day-number {
+        text-align: center;
+    }
+
+    .fc-content-skeleton tbody tr {
+        display: none;
+    }
+
+        .fc-content-skeleton tbody tr:first-of-type {
+            display: table-row;
+        }
+
+    .fc-basic-view tbody .fc-row {
+        min-height: inherit;
+    }
+    button.fc-button{
+        outline:none;
+    }
+</style>
+<h1 class="CalendarTitle clearfix">
+    <span class="col-xs-10" style="padding-left:0;">
+        @calendarTitle
+    </span>
+    <a href="@Url.CalendarSubscribeIcs(calendarPart)" class="col-xs-2" style="text-align:right;padding-right:0;"><i class="fa fa-rss"></i></a>
+</h1>
+
+
+<div class="shortDescription clearfix">
+    @calendarPart.ShortDescription
+    @*@if (!string.IsNullOrWhiteSpace(calendarPart.ShortDescription))
+        {
+            <p class="col-md-9 col-xs-12">@calendarPart.ShortDescription</p>
+        }*@
+</div>
+<hr />
+<div ng-app="CalendarEvents" class="row">
+    <div class="col-sm-4" ng-controller="CalendarController">
+        <div class="calendar"
+             ng-model="eventSources"
+             calendar="myCalendar"
+             config="uiConfig.calendar"
+             ui-calendar="uiConfig.calendar"></div>
+    </div>
+    <div class="col-sm-8 eventsList" ng-controller="EventsController">
+        <div class="eventItem" ng-repeat="item in events">
+            <table>
+                <tr>
+                    <td>
+                        <div class="timeWrap {{ showTwoDates(item) ? 'twoDates':''}}">
+                            <time datetime="{{item.start}}">
+                                <span>{{convertDate(item.start,'MMM')}}</span>
+                                <strong>{{convertDate(item.start,'D')}}</strong>
+                                <em>{{convertDate(item.start,'YYYY')}}</em>
+                            </time>
+                            <span class="timeSpacer"> - </span>
+                            <time datetime="{{item.end}}">
+                                <span>{{convertDate(item.end,'MMM')}}</span>
+                                <strong>{{convertDate(item.end,'D')}}</strong>
+                                <em>{{convertDate(item.end,'YYYY')}}</em>
+                            </time>
+                        </div>
+                    </td>
+                    <td>
+                        <h4>
+                            <a ng-hide="item.url" href="@Url.Event("xxxx").Replace("xxxx", "{{item.id}}")">{{item.title}}</a>
+                            <a ng-show="item.url" href="{{item.url}}">{{item.title}}</a>
+                        </h4>
+                        <p class="location" ng-show="item.location">Location: <b>{{item.location}}</b></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    var app = angular.module('CalendarEvents',
+    ["ui.calendar"]);
+    app.factory('eventService', function ($rootScope) {
+        var events = [];
+        var update = function (d) {
+            events = d;
+            broadcast(events);
+        }
+        var broadcast = function (events) {
+            $rootScope.$broadcast('events.update', events);
+        };
+        return {
+            events: events,
+            update: update
+        };
+    });
+    app.controller("EventsController", [
+        '$scope', 'eventService', function ($scope, eventService) {
+
+            $scope.events = [];
+            $scope.showUrl = function (itemUrl) {
+                console.log(itemUrl);
+                if (itemUrl.length > 0) {
+                    return true;
+                }
+                return false;
+            }
+            $scope.$on('events.update', function (newEvents) {
+                $scope.events = newEvents.targetScope.events;
+                console.log($scope.events);
+                $scope.$digest();
+            });
+
+
+            $scope.convertDate = function (date, format) {
+                if (format == undefined)
+                    format = 'dddd';
+                var mday = moment(date).utc();
+                return mday.format(format);
+            };
+
+            $scope.showTwoDates = function (item) {
+                var format = "MM/DD/YYYY";
+                var start = $scope.convertDate(item.start, format);
+                var end = $scope.convertDate(item.end, format);
+                var sameDay = start == end;
+                console.log(start + " == " + end + " = " + sameDay);
+
+                return !sameDay;
+            }
+        }
+    ]);
+    app.controller('CalendarController', ['$scope', 'eventService', function ($scope, eventService) {
+        var date = new Date();
+        var d = date.getDate();
+        var m = date.getMonth();
+        var y = date.getFullYear();
+        var currentView = "month";
+        var eventsUrl = "@rootUrl/api/Calendars/@calendarPart.Identifier/Events";
+        @*"EventsCalendar/@calendarPart.Identifier/Events";*@
+
+        var updateEvents = function (events) {
+            eventService.update(events);
+        }
+
+        $scope.eventSource = {
+            url: eventsUrl,
+            type: "GET",
+            success: function (doc) {
+                $scope.$parent.events = doc;
+                $scope.$apply();
+                updateEvents(doc);
+                return doc;
+            }
+        };
+
+        //with this you can handle the events that generated by each page render process
+        $scope.renderView = function (view) {
+            var date = new Date(view.calendar.getDate());
+            $scope.currentDate = date.toDateString();
+            console.log("view updated");
+        };
+
+        //with this you can handle the events that generated when we change the view i.e. Month, Week and Day
+        $scope.changeView = function (view, calendar) {
+            currentView = view;
+            calendar.fullCalendar('changeView', view);
+
+        };
+
+
+        $scope.uiConfig = {
+            calendar: {
+                editable: false,
+                header: {
+                    left: 'title',
+                    center: '',
+                    right: 'prev,next'
+                },
+                weekMode: 'liquid',
+
+            }
+        };
+        /* event sources array*/
+        $scope.eventSources = [$scope.eventSource];
+
+    }]);
+
+
+</script>

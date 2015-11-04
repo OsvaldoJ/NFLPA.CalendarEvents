@@ -1,0 +1,477 @@
+﻿@using System.Globalization
+@using Orchard.CalendarEvents.Extensions
+@using Orchard.CalendarEvents.Models
+@using NHibernate.Mapping
+@using Orchard.ContentManagement
+@using Orchard.Environment.Descriptor.Models
+@using Orchard.CalendarEvents.Models
+@using Orchard.Localization
+@model Orchard.CalendarEvents.ViewModels.EditEventViewModel
+@{
+    var shellDescriptor = WorkContext.Resolve<ShellDescriptor>();
+    var blankSelect = new SelectListItem()
+    {
+        Selected = false,
+        Text = "",
+        Value = ""
+    };
+    var isValid = ViewData.ModelState.IsValid;
+
+    var timezoneItems = new List<SelectListItem>
+    {
+        new SelectListItem
+        {
+            Text = "CST - Central",
+            Value = "America/Chicago",
+            Selected = false
+        },
+        new SelectListItem
+        {
+            Text = "EST - Eastern",
+            Value = "America/New_York",
+            Selected = false
+        },
+        new SelectListItem
+        {
+            Text = "MST - Mountain",
+            Value = "America/Denver",
+            Selected = false
+        },
+        new SelectListItem
+        {
+            Text = "PST - Pacific",
+            Value = "America/Los_Angeles",
+            Selected = false
+        },
+    };
+    foreach (var selectListItem in timezoneItems)
+    {
+        if (selectListItem.Value == Model.TimeZone)
+        {
+            selectListItem.Selected = true;
+            break;
+        }
+    }
+    var startDate = Model.StartDate == new DateTime() ?
+        DateTime.Today.ToShortDateString() : Model.StartDate.ToString();
+    var endDate = Model.EndDate == new DateTime() ?
+        DateTime.Today.AddDays(1).ToShortDateString() : Model.EndDate.ToString();
+
+    var startTime = Model.AllDayEvent ? "12:00 AM" : Model.StartDate.ToShortTimeString();
+    var endTime = Model.AllDayEvent ? "12:00 AM" : Model.EndDate.ToShortTimeString();
+
+    var address = Model.AddressLocation;
+}
+
+<script type="text/javascript">
+    var mediaPickerEnabled = @(shellDescriptor.Features.Any(x => x.Name == "Orchard.MediaPicker") ? "true" : "false") ;
+    var mediaLibraryEnabled = @(shellDescriptor.Features.Any(x => x.Name == "Orchard.MediaLibrary") ? "true" : "false") ;
+</script>
+
+@{
+    Script.Require("jQueryColorBox");
+    Style.Require("jQueryColorBox");
+
+    Style.Require("EditEvent");
+    Script.Require("Kendo").AtHead();
+    Style.Require("Kendo").AtHead();
+    Script.Require("EventSearch").AtHead();
+
+    //Chosen
+    Style.Require("Chosen");
+    Script.Require("Chosen");
+    Script.Require("GoogleMapsPlacesApi");
+    var rootUrl = HttpContext.Current.Request.ApplicationPath;
+}
+
+<div ng-app="EventSearchApp">
+    <div ng-controller="EventSearchCtrl" ng-show="loaded" ng-cloak ng-init="EventSelectorInit('@Model.ParentEventIdentifier','@rootUrl')">
+        <fieldset style="display:none;">
+            <label for="isSubEvent" class="inlineLabel">Is a Sub-Event</label>
+            <input type="checkbox" id="isSubEvent" value="{{enableSearch}}" ng-model="enableSearch" />
+        </fieldset>
+        <div ng-show="enableSearch">
+            <fieldset ng-show="selectedEvent">
+                <legend>Parent Event</legend>
+                <table class="items" ng-show="selectedEvent">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <h2>{{selectedEvent.Title}}</h2>
+                                <p>
+                                    {{selectedEvent.ShortDescription}}
+                                    <br />
+                                    {{convertJsonDate(selectedEvent.StartDate)}} - {{convertJsonDate(selectedEvent.EndDate)}}
+                                </p>
+                            </td>
+                            <td style="text-align: right;">
+                                <a href="#" class="button" ng-click="changeSelectedEvent()">Change Event</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="metadata">
+                                Event Categories:
+                                <span class="categoryLabel"
+                                      ng-repeat="category in (selectedEvent.EventCategoryNames)">
+                                    {{category}}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </fieldset>
+
+            <fieldset ng-show="showSearch()">
+                <legend>Search for a Parent Event</legend>
+                <div>
+                    Title:
+                    <input type="text" class="text medium" ng-model="title" ng-enter="newSearchEvents()" tabindex="1" placeholder="Title contains..." />
+                    @*Category: <select ng-show="eventTypes.length" ng-model="eventTypeFilter" data-ng-options="type.Identifier as type.CategoryName for type in eventTypes" tabindex="4"></select>*@
+
+                    @*</div>
+                        <div>*@
+                    Start Date:
+                    <input type="text" class="datepicker" id="eventStartDateFilter" ng-model="startDateFilter" tabindex="2" />
+                    End Date:
+                    <input type="text" class="datepicker" id="eventEndDateFilter" ng-model="endDateFilter" tabindex="3" />
+
+                </div>
+                <div>
+                    <input class="button" type="button" value="Search" ng-click="newSearchEvents()" tabindex="5" />
+                    <input class="button" type="button" value="Reset" ng-click="resetSearch()" tabindex="6" />
+                    <input ng-show="selectedEvent" class="button" type="button" value="Cancel" ng-click="cancelSearch()" tabindex="7" />
+                    <span>Total Items: {{totalItems}}</span>
+                </div>
+            </fieldset>
+
+            <table class="items" ng-show="ranSearch">
+                <thead>
+                    <tr>
+                        <th scope="col">Event Title</th>
+                        <th scope="col">Short Description</th>
+                        <th scope="col">Start Date</th>
+                        <th scope="col">End Date</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody ng-show="searchResults.length > 0">
+                    <tr ng-repeat="item in searchResults">
+                        <td>
+                            <h4>{{item.Title}}</h4>
+                        </td>
+                        <td>
+                            {{item.ShortDescription}}
+                        </td>
+                        <td>
+                            {{convertJsonDate(item.StartDate)}}
+                        </td>
+                        <td>
+                            {{convertJsonDate(item.EndDate)}}
+                        </td>
+                        @*<td>
+                                <span class="badge" ng-repeat="category in categoriesForEvent(item.EventCategoryNamesCsv)">{{category}}</span>
+                            </td>*@
+                        <td><a href="#" ng-click="addItem($index)" class="button">Select</a></td>
+                    </tr>
+                </tbody>
+                <tbody ng-hide="searchResults.length > 0">
+                    <tr>
+                        <td colspan="6">
+                            <div class="info message">No events found.  Would you like to <a href="@Url.EventCreate()">create one?</a></div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr ng-show="numberofPages > 1">
+                        <td colspan="6">
+                            <ul class="pager">
+                                <li ng-hide="currentPage <= 1">
+                                    <a href ng-click="prevPage()">« Prev</a>
+                                </li>
+                                <li ng-repeat="n in range(numberofPages)"
+                                    ng-click="setPage()">
+                                    <span ng-show="n == currentPage" ng-bind="n">1</span>
+                                    <a href ng-hide="n == currentPage" ng-bind="n">1</a>
+                                </li>
+                                <li ng-hide="currentPage <= numberofPages">
+                                    <a href ng-click="nextPage()">Next »</a>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+            <input type="hidden"
+                   id="@Html.FieldIdFor(m=>m.ParentEventIdentifier)"
+                   name="@Html.FieldNameFor(m => m.ParentEventIdentifier)"
+                   value="{{stringValue()}}" />
+        </div>
+    </div>
+</div>
+
+
+<fieldset>
+    @Html.LabelFor(model => model.Title, ("Event Title"),
+        new Dictionary<string, object> {
+            {"class", "required"}
+        })
+    @Html.TextBoxFor(model => model.Title, new { @class = "text large" })
+    <span class="hint">@T("Please provide a title for this event")</span>
+</fieldset>
+
+<fieldset>
+    @Html.LabelFor(model => model.Categories, ("Event Categories to Display"),
+        new Dictionary<string, object> {
+            {"class", "required"}
+        })
+    @Html.ListBox("Event Categories",
+        Model.Categories.Select(c => new SelectListItem
+        {
+            Selected = c.IsChecked,
+            Text = c.Name,
+            Value = c.Identifier
+        }),
+        new Dictionary<string, object> {
+            {"class", "chosen-select"}
+        }
+        )
+    <span class="hint">@T("This calendar will display any events tagged with the selected event categories")</span>
+    @Html.HiddenFor(model => model.SelectedEventCategoryIds)
+</fieldset>
+
+<fieldset>
+    @Html.LabelFor(model => model.AllDayEvent, "All Day Event",
+        new Dictionary<string, object>
+        {
+            {"class","inlineLabel"}
+        })
+    @Html.CheckBoxFor(model => model.AllDayEvent)
+</fieldset>
+
+<fieldset>
+    @Html.LabelFor(model => model.StartDate, ("Event Start Date"),
+         new Dictionary<string, object> {
+                {"class", "required"}
+         })
+    @Html.HiddenFor(m => m.StartDate)
+    @*@Html.TextBoxFor(m => m.StartDate, new Dictionary<string, object>
+        {
+            {"class","datepicker"}
+        })*@
+    <input type="text" id="startDatePicker" />
+    <input type="text" class="timefield" id="startTimePicker" value="@startTime" />
+</fieldset>
+
+<fieldset>
+    @Html.LabelFor(model => model.EndDate, ("Event End Date"),
+        new Dictionary<string, object> {
+            {"class", "required"}
+        })
+    @Html.HiddenFor(m => m.EndDate)
+    <input type="text" id="endDatePicker" />
+    <input type="text" class="timefield" id="endTimePicker" value="@endTime" />
+    @*@Html.TextBoxFor(m => m.EndDate, new Dictionary<string, object>
+        {
+            {"class","datepicker"}
+        })*@
+</fieldset>
+
+
+@*<fieldset>
+        @Html.LabelFor(model => model.TimeZone, T("Time Zone"))
+        @Html.DropDownListFor(model => model.TimeZone, timezoneItems)
+    </fieldset>*@
+
+<fieldset>
+    @Html.LabelFor(model => model.Url, T("Event Page Url"))
+    @Html.TextBoxFor(model => model.Url,
+        new Dictionary<string, object>
+        {
+            {"class","text large"}
+        })
+    <span class="hint">@T("Override the default linking functionality if you want this event to link to a specific URL (i.e. an external web page)")</span>
+</fieldset>
+
+<fieldset>
+    @Html.LabelFor(model => model.Description, ("Description"),
+        new Dictionary<string, object>
+        {
+        })
+    @Display.Body_Editor(
+        EditorFlavor: "html",
+        Text: Model.Description,
+        Field: "Description"
+    )
+</fieldset>
+
+<fieldset>
+    @Html.LabelFor(m => m.AddressLocation, "Address Location",
+    null)
+    @Html.HiddenFor(m => m.AddressLocation)
+    @if (!string.IsNullOrWhiteSpace(address))
+    {
+        <p id="addressdisplay" style="margin-bottom:10px;"><span>Selected Address:</span> 
+        <b>@address</b> 
+        <i style="margin-left: 5px;font-size: 1.2rem;cursor: pointer;padding: 4px 5px;" class="fa fa-trash-o" id="removeAddress"></i>
+    </p>
+    }
+    <input type="text" class="text large" id="AddressAutocomplete"></input>
+</fieldset>
+
+@using (Script.Foot())
+{
+    <script type="text/javascript">
+    //<![CDATA[
+
+    $(function() {
+
+        var allDay = $("#@Html.FieldIdFor(m=>m.AllDayEvent)");
+
+        function toggleAllDay() {
+            if (isAllDay) {
+                $('.timefield').hide();
+            } else {
+                $('.timefield').show();
+            }
+            setStartEndDates();
+        }
+
+        function setStartEndDates() {
+            var startfield = $("#@Html.FieldIdFor(m=>m.StartDate)");
+            var endfield = $("#@Html.FieldIdFor(m=>m.EndDate)");
+            var dateFormat = "M/D/YYYY";
+            var timeFormat = "hh:mm a";
+            var startDateStr = moment(start.value()).format(dateFormat);
+            var startTimeStr = moment(startTime.value()).format(timeFormat);
+            var endDateStr = moment(end.value()).format(dateFormat);
+            var endTimeStr = moment(endTime.value()).format(timeFormat);
+            startfield.val(isAllDay == true ? startDateStr : startDateStr + " " + startTimeStr);
+            endfield.val(isAllDay == true ? endDateStr : endDateStr + " " + endTimeStr);
+            console.log(startfield.val());
+        }
+
+        allDay.bind('change', function() {
+            var isChecked = allDay.is(':checked');
+            console.log(isChecked);
+            isAllDay = isChecked;
+            toggleAllDay();
+        });
+
+        var isAllDay = allDay.is(':checked');
+
+        function startChange() {
+            var startDate = start.value(),
+            endDate = end.value();
+
+            if (startDate) {
+                startDate = new Date(startDate);
+                startDate.setDate(startDate.getDate());
+                end.min(startDate);
+            } else if (endDate) {
+                start.max(new Date(endDate));
+            } else {
+                endDate = new Date();
+                start.max(endDate);
+                end.min(endDate);
+            }
+
+            setStartEndDates();
+        }
+
+        function endChange() {
+            var endDate = end.value(),
+            startDate = start.value();
+
+            if (endDate) {
+                endDate = new Date(endDate);
+                endDate.setDate(endDate.getDate());
+                start.max(endDate);
+            } else if (startDate) {
+                end.min(new Date(startDate));
+            } else {
+                endDate = new Date();
+                start.max(endDate);
+                end.min(endDate);
+            }
+
+            setStartEndDates();
+        }
+
+        var startDateValue = new Date('@startDate');
+        var endDateValue = new Date('@endDate');
+
+        var start = $("#startDatePicker").kendoDatePicker({
+            value: startDateValue,
+            change: startChange,
+            //parseFormats: ["MM/dd/yyyy"]
+        }).data("kendoDatePicker");
+
+        var end = $("#endDatePicker").kendoDatePicker({
+            value: endDateValue,
+            change: endChange,
+            //parseFormats: ["MM/dd/yyyy"]
+        }).data("kendoDatePicker");
+        start.max(end.value());
+        end.min(start.value());
+
+        var startTime = $("#startTimePicker").kendoTimePicker({
+            value: "@startTime",
+            change: function() {
+                var value = this.value();
+                console.log(value); //value is the selected date in the timepicker
+                setStartEndDates();
+            }
+        }).data("kendoTimePicker");
+
+        var endTime = $("#endTimePicker").kendoTimePicker({
+            value: "@endTime",
+            change: function() {
+                var value = this.value();
+                console.log(value); //value is the selected date in the timepicker
+                setStartEndDates();
+            }
+        }).data("kendoTimePicker");
+
+        toggleAllDay();
+
+        $('#Event_Event_Categories').chosen({
+            disable_search_threshold: 10,
+            no_results_text: "No categories found for: !",
+            width: "100%",
+            placeholder_text_multiple: "Select categories"
+        });
+
+        $('#Event_Event_Categories').on('change', function(evt, params) {
+            var selectedOptions = $(this).find('option:selected');
+            var selectedIds = [];
+            $.each(selectedOptions, function(index, option) {
+                selectedIds.push(option.value);
+            });
+            var idsField = $('#@Html.FieldIdFor(m => m.SelectedEventCategoryIds)');
+            idsField.val(selectedIds.join(','));
+        });
+
+        autocomplete = new google.maps.places.Autocomplete(
+            (document.getElementById('AddressAutocomplete')),
+            { types: ['geocode'] });
+        google.maps.event.addListener(autocomplete, 'place_changed', function() {
+            fillInAddress();
+        });
+
+        //$('#AddressAutocomplete').val('@address');
+        $('#removeAddress').on('click', function(){
+            $('#@Html.FieldIdFor(m=>m.AddressLocation)').val('');
+            $('#addressdisplay').hide();
+        });
+    });
+    var autocomplete;
+    function fillInAddress() {
+        // Get the place details from the autocomplete object.
+        var place = autocomplete.getPlace();
+        console.log(place);
+        $('#@Html.FieldIdFor(m=>m.AddressLocation)').val(place.formatted_address);
+    }
+
+    //]]>
+    </script>
+}

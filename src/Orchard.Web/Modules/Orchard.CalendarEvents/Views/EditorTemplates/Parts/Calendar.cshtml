@@ -1,0 +1,85 @@
+﻿@using System.Globalization
+@model Orchard.CalendarEvents.ViewModels.EditCalendarPartViewModel
+@{
+    
+    //Chosen
+    Style.Require("Chosen");
+    Script.Require("Chosen");
+    Script.Require("CalendarChosen");
+}
+
+@*
+    <fieldset>
+        @Html.LabelFor(model => model.Title, ("Calendar Title"),
+            new Dictionary<string, object> {
+                {"class", "required"}
+            })
+        @Html.TextBoxFor(model => model.Title, new { @class = "text large" })
+        <span class="hint">@T("Please provide a title for this calendar")</span>
+    </fieldset>
+*@
+<fieldset>
+    @Html.LabelFor(model => model.Categories, ("Event Categories to Display"),
+        new Dictionary<string, object> {
+            {"class", "required"}
+        })
+    @Html.ListBox("Event Categories",
+        Model.Categories.Select(c => new SelectListItem
+        {
+            Selected = c.IsChecked,
+            Text = c.Name,
+            Value = c.Identifier
+        }),
+        new Dictionary<string, object> {
+            {"class", "chosen-select"}
+        }
+        )
+    <span class="hint">@T("This calendar will display any events tagged with the selected event categories")</span>    
+    @Html.HiddenFor(model => model.SelectedEventCategoryIds)
+</fieldset>
+
+
+<fieldset>
+    @Html.LabelFor(model => model.ShortDescription, ("Short Description"),
+        new Dictionary<string, object> {
+            {"class", "required"}
+        })
+    @Html.TextBoxFor(model => model.ShortDescription, new { @class = "text large" })
+    <span class="hint">@T("Please provide a short description for this calendar")</span>
+</fieldset>
+
+<fieldset>
+    @Html.LabelFor(model => model.Description, ("Description"),
+        new Dictionary<string, object> {
+            {"class", "required"}
+        })
+    @Html.TextAreaFor(model => model.Description, new { @class = "text large" })
+    <span class="hint">@T("Please provide a description for this calendar")</span>
+</fieldset>
+
+@using (Script.Foot())
+{
+    <script type="text/javascript">
+    //<![CDATA[
+        $(function () {
+            $('#Calendar_Event_Categories').chosen({
+                disable_search_threshold: 10,
+                no_results_text: "No categories found for: !",
+                width: "100%",
+                placeholder_text_multiple: "Select categories"
+            });
+            $('#Calendar_Event_Categories').on('change', function (evt, params) {
+                var selectedOptions = this.selectedOptions;
+                var selectedIds = [];
+                $.each(selectedOptions, function(index, option) {
+                    selectedIds.push(option.value);
+                });
+                var idsField = $('#@Html.FieldIdFor(m => m.SelectedEventCategoryIds)');
+                console.log(idsField);
+                idsField.val(selectedIds.join(','));
+                console.log(idsField);
+            });
+        })
+        //]]>
+</script>
+}

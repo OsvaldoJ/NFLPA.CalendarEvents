@@ -1,0 +1,224 @@
+﻿@using Orchard.CalendarEvents.Extensions
+@using Orchard.CalendarEvents.Models;
+@{
+    var eventPart = Model.ContentPart as EventPart;
+    var imageUrl = "";
+    try
+    {
+        if (Model.ContentPart.EventImage != null)
+        {
+
+            var media = Model.ContentPart.EventImage.MediaParts;
+            foreach (var item in media)
+            {
+                if (item.MimeType.Contains("image/"))
+                {
+                    try
+                    {
+                        imageUrl = item.MediaUrl;
+                    }
+                    catch (Exception exMedia)
+                    {
+
+                    }
+                }
+            }
+        }
+    }
+    catch (Exception ex)
+    {
+
+    }
+}
+@if (eventPart != null)
+{
+    Layout.Title = eventPart.Title;
+    var startDate = Convert.ToDateTime(eventPart.StartDate);
+    var endDate = Convert.ToDateTime(eventPart.EndDate);
+
+    <style>
+        .eventImage {
+            display: block;
+            /*max-height:300px;*/
+            width: 100%;
+        }
+
+        .event-with-rsvp .details {
+            padding-top: 0;
+        }
+        .page-header h1{
+            display:none;
+        }
+        /*@@media (min-width:768px) {
+            .event-info .details h2 {
+                margin-top: 0;
+            }
+            .info.details{
+                padding-right:0;
+            }
+        }*/
+        /*@@media (max-width:767px) {
+            .info.details{
+                padding-left:0;
+                padding-right:0;
+            }
+        }*/
+        #street_number:empty + #route:empty + br{
+            display:none;
+        }
+    </style>
+
+    <div class="event-with-rsvp">
+                @{
+    if (!string.IsNullOrWhiteSpace(imageUrl))
+    {
+        <div class="eventImageWrap">
+            <img src="@imageUrl" alt="" class="eventImage" />
+        </div>
+    }
+                }
+
+                <div class="clearfix">
+                    <div class="event-info">
+                        <div class="event-info-inner">
+                            @if (!string.IsNullOrWhiteSpace(eventPart.AddressLocation))
+                            {
+                                <div id="mapCanvas" class="info map">
+                                    <div class="embed-responsive embed-responsive-event" id="map-canvas">
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <style>
+                                    .info.details{
+                                        width:100%;
+                                        /*padding-left:0;
+                                        padding-right:0;*/
+                                    }
+                                    .info.details h2 {
+                                        /*margin-top: 0;*/
+                                    }
+                                        
+                                </style>
+                            }
+
+                            <div class="info details">
+                                <h2 class="clearfix"><span class="col-xs-10" style="padding-left:0;">@eventPart.Title </span>
+                                    <a href="@Url.EventSubscribe(eventPart)" class="col-xs-2" style="text-align:right;padding-right:0;"><i class="fa fa-download"></i></a></h2>
+                                @if (!string.IsNullOrWhiteSpace(eventPart.AddressLocation))
+                                {
+                                    <div class="location">
+                                        <i class="fa fa-map-marker"></i>
+                                        <p class="pull-content-right">
+                                            <span class="field" id="street_number"></span>
+                                            <span class="field" id="route"></span>
+                                            <br />
+                                            <span class="field" id="locality"></span>,
+                                            <span class="field" id="administrative_area_level_1"></span>
+                                            <span class="field" id="postal_code"></span>
+                                            <br />
+                                            <span class="field" id="country"></span>
+                                        </p>
+                                    </div>
+                                }
+                                <div class="date">
+                                    <i class="fa fa-calendar-o"></i>
+                                    <p class="pull-content-right">
+                                        @startDate.ToShortDateString()
+                                        @if (!string.Equals(startDate.ToShortDateString(), endDate.ToShortDateString(), StringComparison.OrdinalIgnoreCase))
+                                        {
+                                            <text>- @endDate.ToShortDateString()</text>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="time">
+                                    <i class="fa fa-clock-o"></i>@if (!eventPart.AllDayEvent)
+                                                                 {
+                                                                     <p class="pull-content-right">@startDate.ToShortTimeString()</p>
+                                                                 }
+                                    @if (eventPart.AllDayEvent)
+                                    {
+                                        <p class="pull-content-right">All Day Event</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div class="event-description">
+                    @Html.Raw(eventPart.Description)
+                </div>
+            </div>
+
+
+}
+@using (Script.Foot())
+{
+    if (!string.IsNullOrWhiteSpace(eventPart.AddressLocation))
+    {
+        Script.Require("GoogleMapsPlacesApi").AtHead();
+        <input type="hidden" id="pac-input" />
+        <script>
+            var place;
+            var geocoder;
+            var map;
+            var componentForm = {
+                street_number: 'short_name',
+                route: 'long_name',
+                locality: 'long_name',
+                administrative_area_level_1: 'short_name',
+                country: 'long_name',
+                postal_code: 'short_name'
+            };
+
+            function initialize() {
+
+                geocoder = new google.maps.Geocoder();
+                var latlng = new google.maps.LatLng(37.6, -95.665);
+                var mapOptions = {
+                    zoom: 16,
+                    center: latlng
+                }
+                map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+                codeAddress();
+            }
+
+            function codeAddress() {
+                var address = "@eventPart.AddressLocation";
+                geocoder.geocode({ 'address': address }, function (results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        map.setCenter(results[0].geometry.location);
+                        place = results[0];
+                        for (var component in componentForm) {
+                            document.getElementById(component).value = '';
+                            document.getElementById(component).disabled = false;
+                        }
+
+                        // Get each component of the address from the place details
+                        // and fill the corresponding field on the form.
+                        for (var i = 0; i < place.address_components.length; i++) {
+                            var addressType = place.address_components[i].types[0];
+                            if (componentForm[addressType]) {
+                                var val = place.address_components[i][componentForm[addressType]];
+                                document.getElementById(addressType).innerHTML = val;
+                            }
+                        }
+
+                        var marker = new google.maps.Marker({
+                            map: map,
+                            position: results[0].geometry.location
+                        });
+                    } else {
+                        alert('Geocode was not successful for the following reason: ' + status);
+                    }
+                });
+            }
+            google.maps.event.addDomListener(window, 'load', initialize);
+        </script>
+    }
+
+}

@@ -1,0 +1,24 @@
+﻿@model Orchard.CalendarEvents.Models.EventAddress
+
+@if (Model != null && !string.IsNullOrWhiteSpace(Model.LocationName))
+{
+    <div class="address">
+        <h2>@Model.LocationName</h2>
+        <p>@Model.StreetAddress1</p>
+        @if (!String.IsNullOrWhiteSpace(Model.StreetAddress2))
+        {
+            <p>@Model.StreetAddress2</p>
+        }
+        @if (!String.IsNullOrWhiteSpace(Model.StreetAddress3))
+        {
+            <p>@Model.StreetAddress3</p>
+        }
+        <p>
+            @Model.City, @Model.State @Model.Zip
+            @if (!String.IsNullOrWhiteSpace(Model.Country))
+            {
+                <b>@Model.Country</b>
+            }
+        </p>
+    </div>
+}

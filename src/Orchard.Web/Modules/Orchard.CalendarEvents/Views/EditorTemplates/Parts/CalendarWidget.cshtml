@@ -1,0 +1,20 @@
+﻿@using Orchard.CalendarEvents.Models
+@model Orchard.CalendarEvents.ViewModels.CalendarWidgetViewModel
+
+<fieldset>
+    <div>
+        @Html.LabelFor(m => m.SelectedCalendarIdentifier, T("For Calendar"))
+        <select id="@Html.FieldIdFor(m => m.SelectedCalendarIdentifier)" name="@Html.FieldNameFor(m => m.SelectedCalendarIdentifier)">
+            @foreach (CalendarPart calendar in Model.Calendars)
+            {
+                @Html.SelectOption(Model.SelectedCalendarIdentifier, calendar.Identifier, calendar.Title)
+            }
+        </select>
+        <span class="hint">@T("Select for which calendar you want to display events")</span>
+    </div>
+    <div>
+        @Html.LabelFor(m => m.Count, T("Count"))
+        @Html.TextBoxFor(m => m.Count, new { @class = "text small" })
+        <span class="hint">@T("Number of events to display.")</span>
+    </div>
+</fieldset>

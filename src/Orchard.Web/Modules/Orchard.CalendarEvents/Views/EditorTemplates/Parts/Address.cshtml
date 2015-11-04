@@ -1,0 +1,73 @@
+﻿@using System.Globalization
+@using FluentNHibernate.Utils
+@using Orchard.Localization
+@model Orchard.CalendarEvents.Models.AddressPart
+<fieldset>
+    <legend>Address</legend>
+
+    <div class="editor-label">
+        @Html.LabelFor(model => model.LocationName, T("Location Name"))
+    </div>
+    <div class="editor-field">
+        @Html.TextBoxFor(model => model.LocationName)
+        @Html.ValidationMessageFor(model => model.LocationName)
+    </div>
+    <div class="editor-label">
+        @Html.LabelFor(model => model.MapEmbedCode, T("Google Maps Embed Code"))
+    </div>
+    <div class="editor-field">
+        @Html.TextAreaFor(model => model.MapEmbedCode)
+    </div>
+    <div class="editor-label">
+        @Html.LabelFor(model => model.StreetAddress1, T("Street Address"))
+    </div>
+    <div class="editor-field">
+        @Html.TextBoxFor(model => model.StreetAddress1, new { @class = "text medium" })
+        @Html.ValidationMessageFor(model => model.StreetAddress1)
+    </div>
+    <div class="editor-label">
+        @Html.LabelFor(model => model.StreetAddress2, T("Street Address 2"))
+    </div>
+    <div class="editor-field">
+        @Html.TextBoxFor(model => model.StreetAddress2, new { @class = "text medium" })
+        @Html.ValidationMessageFor(model => model.StreetAddress2)
+    </div>
+    <div class="editor-label">
+        @Html.LabelFor(model => model.StreetAddress3, T("Street Address 3"))
+    </div>
+    <div class="editor-field">
+        @Html.TextBoxFor(model => model.StreetAddress3, new { @class = "text medium" })
+        @Html.ValidationMessageFor(model => model.StreetAddress3)
+    </div>
+
+    <div class="editor-label">
+        @Html.LabelFor(model => model.City, T("City"))
+    </div>
+    <div class="editor-field">
+        @Html.TextBoxFor(model => model.City)
+        @Html.ValidationMessageFor(model => model.City)
+    </div>
+
+    <div class="editor-label">
+        @Html.LabelFor(model => model.State, T("State"))
+    </div>
+    <div class="editor-field">
+        @Html.TextBoxFor(model => model.State)
+        @Html.ValidationMessageFor(model => model.State)
+    </div>
+
+    <div class="editor-label">
+        @Html.LabelFor(model => model.Zip, T("Zip"))
+    </div>
+    <div class="editor-field">
+        @Html.TextBoxFor(model => model.Zip)
+        @Html.ValidationMessageFor(model => model.Zip)
+    </div>
+    <div class="editor-label">
+        @Html.LabelFor(model => model.Country, T("Country"))
+    </div>
+    <div class="editor-field">
+        @Html.TextBoxFor(model => model.Country)
+        @Html.ValidationMessageFor(model => model.Country)
+    </div>
+</fieldset>

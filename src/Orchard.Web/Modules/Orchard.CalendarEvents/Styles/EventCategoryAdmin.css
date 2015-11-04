@@ -1,0 +1,20 @@
+﻿.orchard-tags #main .manage form {
+    margin:0;   
+}
+.orchard-tags .manage fieldset {
+    display:inline;
+    margin:0;
+    padding:0;
+}
+.orchard-tags .manage label[for=TagName] {
+    display:none;
+}
+.manage.emptyList {
+    float: left;
+}
+.manage input[type="text"] + input[type="checkbox"] {
+    margin-left: 10px;
+}
+.manage .field-validation-error {
+    color: red;
+}

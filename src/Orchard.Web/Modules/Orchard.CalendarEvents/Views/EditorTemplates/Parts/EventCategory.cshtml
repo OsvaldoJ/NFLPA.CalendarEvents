@@ -1,0 +1,382 @@
+﻿@using Orchard.CalendarEvents.Extensions
+@using Orchard.Environment.Descriptor.Models
+@using Newtonsoft.Json
+@model Orchard.CalendarEvents.Models.CategoryPart
+@{
+    Script.Require("Kendo");
+
+    //Style.Require("EventCategoryAdmin");
+    Script.Require("MomentJs").AtHead();
+    Script.Require("iCalendar").AtHead();
+
+    var defaultSelectedCategories = Html.Raw(JsonConvert
+        .SerializeObject(new string[] { Model.Identifier }));
+
+    var defaultSelectedCategoryNames = Html.Raw(JsonConvert
+        .SerializeObject(new string[] { Model.CategoryName }));
+}
+<style>
+    #dropZone {
+        border: 2px dashed #bbb;
+        -moz-border-radius: 5px;
+        -webkit-border-radius: 5px;
+        border-radius: 5px;
+        padding: 10px;
+        text-align: left;
+        font: 16pt bold;
+        color: #aaa;
+        box-sizing: border-box;
+        font-family: sans-serif;
+    }
+
+        #dropZone.hover {
+            background: #ededed;
+        }
+
+    #progressBar {
+        width: 100%;
+    }
+
+    #doneProcessing {
+        padding: 2px 10px;
+        margin-top: 10px;
+    }
+</style>
+<fieldset>
+    @Html.LabelFor(m => m.CategoryName, T("Category Name"))
+    @Html.ValidationMessageFor(m => m.CategoryName)
+    @Html.TextBoxFor(m => m.CategoryName, new { @class = "text required large" })
+</fieldset>
+<fieldset>
+    @Html.LabelFor(m => m.Description, T("Description"))
+    @Html.ValidationMessageFor(m => m.Description)
+    @Html.TextAreaFor(m => m.Description, new { @class = "text required" })
+</fieldset>
+<fieldset id="eventsCount" style="display: none;">
+    <div>
+        Total Events: <b id="TotalEvents"></b>
+        <div class="button" style="float:right;" id="DeleteAllEvents">Delete All</div>
+    </div>
+</fieldset>
+<fieldset>
+    <div id="dropZone">
+        <p>
+            Import .ics Calendar Events
+            <input type="file" id="templateUploadInput" style="width:90px;color:transparent" />
+        </p>
+        <p style="font-size:.7em;text-align: left;">
+            <input type="checkbox" id="CheckForDuplicates" />
+            Check for duplicates during import <span style="color:red;">(not as fast)</span>
+        </p>
+        <p style="font-size:.7em;text-align: left;">
+            <input type="checkbox" id="GoogleCalendarImport" checked="checked" /> This is from Google Calendar
+        </p>
+    </div>
+
+    <div id="processingEvents" style="display:none;">
+        <p style="display:none;">Import Status: <b id="processed">0</b> out of <b id="totalToProcess"></b></p>
+        <p id="importStatus"></p>
+        <div id="progressBar"></div>
+        <div id="doneProcessing" style="display: none;" class="button">Import Another File</div>
+    </div>
+</fieldset>
+
+@using (Script.Foot())
+{
+    <script type="text/javascript">
+    //<![CDATA[
+
+    if (typeof String.prototype.startsWith != 'function') {
+        String.prototype.startsWith = function (prefix) {
+            return this.slice(0, prefix.length) == prefix;
+        };
+    }
+
+    if (typeof String.prototype.endsWith != 'function') {
+        String.prototype.endsWith = function (suffix) {
+            return this.slice(-suffix.length) == suffix;
+        };
+    }
+
+    $(function () {
+
+        var $drop = $('#dropZone');
+        var $progressBar = $('#processingEvents');
+        var $doneProcessing = $('#doneProcessing');
+        var $processed = $('#processed');
+        var $totalToProcess = $('#totalToProcess');
+        var $importStatus = $('#importStatus');
+        $doneProcessing.on('click', function() {
+            resetImportForm();
+        });
+
+
+        var drop = $drop[0];
+        drop.addEventListener('drop', handleDrop, false);
+        drop.addEventListener('dragenter', handleDragover, false);
+        drop.addEventListener('dragover', handleDragover, false);
+
+        function handleDragover(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        }
+
+        $drop.on('dragenter', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $drop.addClass('hover');
+            return false;
+        });
+        $drop.on('dragleave', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            $drop.removeClass('hover');
+            return false;
+        });
+
+        var fileInput = $('#templateUploadInput')[0];
+        fileInput.addEventListener('change', function (e1) {
+            var f = fileInput.files[0];
+            processFile(f);
+        });
+
+        function processFile(f) {
+            //read ics file and process it into the calendar
+            $drop.removeClass('hover');
+            var reader = new FileReader();
+            if (f) {
+                var name = f.name;
+                var type = f.type;
+                reader.onload = function (e) {
+                    if (type.startsWith('text/calendar')) {
+                        var data = e.target.result;
+                        readData(data);
+                    } else {
+                        reader.abort();
+                        alert('Error: file type must be Text/Calendar (end in .ics)');
+                    }
+                };
+                reader.readAsText(f);
+            }
+        }
+
+        var totalEventsToProcess = 0;
+        var eventsProcessed = 0;
+        var pb = $("#progressBar").kendoProgressBar({
+            type: "percent",
+            animation: false,
+            complete: function(e) {
+                $doneProcessing.show();
+                this.progressWrapper.css({
+                    "background-color": "#008000"
+                });
+                this.progressStatus.text("Import Complete!");
+            }
+        }).data("kendoProgressBar");
+        var promises = [];
+        function readData(d) {
+            if (d) {
+                if ($.icalendar) {
+                    var ical = $.icalendar.parse(d);
+                    var events = ical.vevent || [];
+                    if (events.length > 0) {
+                        $drop.hide();
+                        totalEventsToProcess = events.length;
+                        eventsProcessed = 0;
+                        pb.value(false);
+                        $processed.text(eventsProcessed);
+                        $totalToProcess.text(totalEventsToProcess);
+                        $progressBar.show();
+                        //events.forEach(createEventFromArray);
+
+                        var importFromGoogle = $('#GoogleCalendarImport').is(':checked');
+                        var checkdupes = $('#CheckForDuplicates').is(':checked');
+
+                        var mappedEvents = events.map(function(element) {
+                            console.log(element);
+                            var startDate = element.dtstart._value != undefined ? new Date(element.dtstart._value) :
+                                new Date(element.dtstart);
+                            var endDate = element.dtend._value != undefined ? new Date(element.dtend._value) :
+                                new Date(element.dtend);
+                            var allDay = element.dtstart._value != undefined;
+                            var eventObj = {
+                                Title: element.summary,
+                                Start: startDate,
+                                End: endDate,
+                                IsAllDay: allDay,
+                                Description: element.description,
+                                Location: element.location,
+                                ImportFromGoogleCalendar: importFromGoogle,
+                                EventCategoryIds: @defaultSelectedCategories,
+                                EventCategoryNames: @defaultSelectedCategoryNames,
+                                ImportUid: element.uid,
+                                CheckDuplicates: checkdupes
+                            };
+                            if (element.rrule) {
+                                eventObj.RecurrenceRule = element.rrule;
+                            };
+                            //console.log(eventObj);
+                            return eventObj;
+                        });
+
+                        $importStatus.html('Importing <b>'+totalEventsToProcess+'</b> events.  Please be patient...');
+                        var token = $('input[name="__RequestVerificationToken"]').val();
+                        var headers = {};
+                        headers['__RequestVerificationToken'] = token;
+                        var q = {
+                            __RequestVerificationToken: token,
+                            models: JSON.stringify(mappedEvents)
+                        }
+                        console.log(q);
+                        var p = $.ajax({
+                            type: "POST",
+                            headers: headers,
+                            dataType: "JSON",
+                            url: "@Url.CreateEventFromScheduler()",
+                            data: q
+                        });
+                        promises.push(p);
+                        p.done(function(data) {
+                            updateProcessed();
+                        });
+                        @*
+                            $.each(mappedEvents, function(index, val) {
+                                //---------some async ajax action here per loop ---------
+                                var q = {
+                                    models: JSON.stringify([val])
+                                };
+                                //return;
+                                var p = $.ajax({
+                                    type: "GET",
+                                    url: "@Url.CreateEventFromScheduler()",
+                                    data: q
+                                });
+                                promises.push(p);
+                                p.done(function(data) {
+                                    updateProcessed();
+                                });
+                            });
+                                *@
+                            // When all ajax complete..
+                            $.when.apply($, promises).done(function() {
+                                //getEvents();
+                                window.location.reload();
+                            });
+                        }
+                    }
+                }
+            }
+
+        function updateProcessed() {
+                eventsProcessed = totalEventsToProcess;
+                //eventsProcessed ++;
+                $processed.text(eventsProcessed);
+                var percentProcessed = (eventsProcessed / totalEventsToProcess) * 100;
+                pb.value(percentProcessed);
+            
+                $importStatus.html('<b class="">Complete!</b>');
+                
+            }
+
+            function resetImportForm() {
+                $doneProcessing.hide();
+                $progressBar.hide();
+                $drop.show();
+                totalEventsToProcess = 0;
+                eventsProcessed = 0;
+                pb.value(0);
+            }
+
+            function handleDrop(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                var files = e.dataTransfer.files;
+                var i, f;
+                f = files[0];
+                processFile(f);
+            }
+
+
+            var events = [];
+            var deleting = false;
+            var promises = [];
+
+            var $deleteButton = $('#DeleteAllEvents');
+            function getEvents() {
+                events = [];
+                $.get('@Url.GetEventsForCategory(Model)', function (data) {
+                    $('#TotalEvents').text(data.length);
+
+                    events.push(data[0]);
+                    events.push(data[1]);
+                    events.push(data[2]);
+                    events.push(data[3]);
+
+                    events = data;
+
+                    $('#eventsCount').show();
+                });
+            }
+
+            getEvents();
+
+            var errorInProcess = false;
+
+            $deleteButton.on('click', function () {
+                if (confirm("Are you sure you want to delete all events in this category?")) {
+                    $deleteButton.addClass('disabled');
+                    if (!deleting) {
+                        deleting = true;
+
+                        $.each(events, function (index, val) {
+                            //---------some async ajax action here per loop ---------
+                            //https://localhost:44322/Admin/Orchard.CalendarEvents/Events/2a2eea978cd94a5d95e6a76e49db0c58/Remove
+
+                            var url = "@Url.RemoveEventsById()";
+                            var q = {
+                                id: val.Id
+                            };
+                            //console.log(url);
+                            //console.log(q);
+                            //return;
+                            if (errorInProcess) {
+                                return;
+                            }
+                            var p = $.ajax({
+                                type: "GET",
+                                url: url,
+                                data: q
+                            });
+                            promises.push(p);
+                            p.done(function (d) {
+                                //updateProcessed();
+                            });
+                            p.fail(function () {
+                                promises = [];
+                                $.ajax.stop();
+                                errorInProcess = true;
+                            });
+                        });
+                        // When all ajax complete..
+                        $.when.apply($, promises).done(function() {
+                            getEvents();
+                            deleting = false;
+                            $deleteButton.removeClass('disabled');
+                            if (errorInProcess) {
+                                alert('Error deleting events');
+                            }
+                        });
+
+                        @*$.get('@Url.EventCategoryRemoveAllEventsApi(Model)', function (data) {
+                            $('#TotalEvents').text(data);
+                            deleting = false;
+                            $deleteButton.removeClass('disabled');
+                        });*@
+                    }
+                }
+            });
+        });
+        //]]>
+</script>
+}

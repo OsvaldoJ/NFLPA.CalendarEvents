@@ -1,0 +1,50 @@
+@using Orchard.CalendarEvents.Extensions
+@using Orchard.CalendarEvents.Extensions
+@using Orchard.CalendarEvents.Models
+@using NHibernate.Linq
+@using Orchard.Core.Contents.ViewModels;
+@using Orchard.Utility.Extensions;
+@model Orchard.CalendarEvents.ViewModels.EventCategoriesListViewModel
+@{
+    Layout.Title = T("Manage Event Categories").ToString();
+    Style.Require("CalendarStyles");
+    Style.Require("Admin");
+    Script.Require("ShapesBase");
+}
+
+@Html.ValidationSummary()
+<div class="actions"><a class="add button primaryAction" href="@Url.EventCategoryCreate()">@T("New Category")</a></div>
+@using (Html.BeginFormAntiForgeryPost(Url.Action("List", "Admin", new { area = "Contents", id = "" })))
+{
+    <fieldset>
+        <table class="items" summary="@T("This is a table of the tags in your application")">
+            <colgroup>
+                <col id="Name" />
+                <col id="Edit" />
+            </colgroup>
+            <thead>
+            <th scope="col">@T("Name")</th>
+            <th scope="col"></th>
+            </thead>
+            @foreach (var category in Model.Categories)
+            {
+                if (category.CategoryPart != null)
+                {
+                    <tr>
+                        <td>
+                            @Html.ActionLink(category.CategoryPart.CategoryName ?? "Undefined", "Edit", new { categoryId = category.CategoryPart.Identifier })
+                            <p>@category.CategoryPart.Description</p>
+                            <p>Events: <b>@category.Events.Count()</b> </p>
+                        </td>
+                        <td style="text-align: right;">
+                            @Html.ActionLink(T("Edit").ToString(), "Edit", new { categoryId = category.CategoryPart.Identifier }) @T(" | ")
+                            <a href="@Url.EventCategoryRemove(category.CategoryPart)" itemprop="RemoveUrl UnsafeUrl">@T("Delete")</a>
+
+                        </td>
+                    </tr>
+                }
+
+            }
+        </table>
+    </fieldset>
+}

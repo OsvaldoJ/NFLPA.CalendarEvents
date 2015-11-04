@@ -1,0 +1,62 @@
+@using Orchard.CalendarEvents.Extensions
+@using Orchard.ContentManagement
+@using Orchard.Core.Common.Models
+@using Orchard.Core.Contents.ViewModels;
+@using Orchard.Core.Title.Models
+@using Orchard.Utility.Extensions;
+@model Orchard.CalendarEvents.ViewModels.CalendarAdminListViewModel
+
+@{
+    Layout.Title = T("Manage Calendars").ToString();
+    Style.Require("CategoryTags");
+}
+
+@Html.ValidationSummary()
+<div class="actions"><a class="add button primaryAction" href="@Url.CalendarCreate()">@T("New Calendar")</a></div>
+@using (Html.BeginFormAntiForgeryPost(Url.Action("List", "Admin", new { area = "Contents", id = "" })))
+{
+    <fieldset>
+        <div class="items">
+        <h1>Calendars</h1>
+            @if (Model.Calendars.Any())
+            {
+                foreach (var item in Model.Calendars)
+                 {
+                     <table class="items">
+                         <tr>
+                             <td>
+                                 <h2><a href="@Url.Calendar(item)" target="_blank">@item.Title</a> @*@Html.ActionLink(item.Title, "Item", new { calendarId = item.Identifier })*@</h2>
+                                 <p>@item.ShortDescription</p>
+                             </td>
+                             <td style="text-align: right;">
+                                 <a href="@Url.EventsForCalendarAdmin(item.Identifier)">@T("View Events")</a> @T(" | ")
+                                 <a href="@Url.Calendar(item)" target="_blank">Public View</a>
+                                 @*@Html.ActionLink(T("View").ToString(), "Item", new { calendarId = item.Identifier })*@ @T(" | ")
+                                 @Html.ActionLink(T("Edit").ToString(), "Edit", new { calendarId = item.Identifier }) @T(" | ")
+                                 <a href="@Url.CalendarRemoveById(item)" itemprop="RemoveUrl UnsafeUrl">@T("Delete")</a>
+                             </td>
+                         </tr>
+                         <tr>
+                             <td colspan="2" class="metadata">
+                                 Event Categories:
+                                    @foreach (var category in item.Categories)
+                                    {
+                                        if (Model.CategoriesList.Any(c => c.Id == category.Id))
+                                         {
+                                             <span class="categoryLabel">
+                                                 @Display(Model.CategoriesList.Single(c => c.Id == category.Id).CategoryName)
+                                             </span>
+                                         }
+                                    }
+                             </td>
+                         </tr>
+                     </table>
+                 }
+            }
+            else
+            {
+                <div class="info message">@T("There are no calendars yet. Want to <a href=\"{0}\">add one</a>?", Url.CalendarCreate())</div>
+            }
+        </div>
+    </fieldset>
+}

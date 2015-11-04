@@ -1,0 +1,13 @@
+﻿
+    .categoryLabel {
+        background: #08c;
+        color: white;
+        padding: 1px 4px;
+        margin: 0 5px;
+        border-radius: 3px;
+        font-size: .925em;
+    }
+    .metadata {
+        padding: 5px 0;
+        margin: 5px 0;
+    }

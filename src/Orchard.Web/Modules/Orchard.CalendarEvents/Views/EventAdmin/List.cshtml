@@ -1,0 +1,240 @@
+@using Orchard.CalendarEvents.Extensions
+@using Orchard.CalendarEvents.Models
+@using Orchard.ContentManagement
+@using Orchard.Core.Common.Models
+@using Orchard.Core.Contents.ViewModels;
+@using Orchard.Utility.Extensions;
+@using Orchard.CalendarEvents.Models;
+@model Orchard.CalendarEvents.ViewModels.EventAdminListViewModel
+@{
+    Layout.Title = T("Manage Events").ToString();
+    Script.Require("Kendo").AtHead();
+    Style.Require("Kendo").AtHead();
+    Style.Require("CalendarStyles");
+    Style.Require("Admin");
+    Style.Require("CategoryTags");
+    Script.Require("EventSearch").AtHead();
+
+    var calendar = Model.CalendarId;
+    CalendarPart calendarPart = Model.Calendar;
+
+    var rootUrl = HttpContext.Current.Request.ApplicationPath;
+}
+@Html.ValidationSummary()
+
+<div class="actions"><a class="add button primaryAction" href="@Url.EventCreate()">@T("New Event")</a></div>
+
+@using (Html.BeginFormAntiForgeryPost())
+{
+    @rootUrl
+    <div ng-app="EventSearchApp">
+        <div ng-controller="EventSearchCtrl" ng-show="loaded" ng-cloak ng-init="init(true, '@calendar', '@rootUrl')">
+            <h1>
+                Events @if (calendarPart != null)
+                {
+                    <text>in calendar:
+                        <a href="@Url.CalendarForAdmin(calendarPart)">@calendarPart.Title</a>
+                    </text>
+                }
+            </h1>
+            <fieldset>
+                <legend>Search for Events</legend>
+                <div>
+                    Title:
+                    <input type="text" class="text medium" ng-model="title" ng-enter="newSearchEvents()" tabindex="1" placeholder="Title contains..." />
+
+                    Category: <select ng-show="eventTypes.length" ng-model="eventTypeFilter"
+                                      data-ng-options="type.Identifier as type.CategoryName for type in eventTypes"
+                                      tabindex="4"></select>
+
+                    Start Date:
+                    <input kendo-date-picker id="eventStartDateFilter" ng-model="startDateFilter" tabindex="2" />
+                    End Date:
+                    <input kendo-date-picker id="eventEndDateFilter" ng-model="endDateFilter" tabindex="3" />
+
+                </div>
+                <div>
+                    <input class="button" type="button" value="Search" ng-click="newSearchEvents()" tabindex="5" />
+                    <input id="resetSearchButton" class="button" type="button" value="Reset" ng-click="resetSearch()" tabindex="6" />
+                    <span>Total Items: {{totalItems}}</span>
+                </div>
+            </fieldset>
+            <fieldset>
+                <table class="items" ng-repeat="item in searchResults">
+                    <tbody ng-show="searchResults.length > 0">
+                        <tr>
+                            <td>
+                                <table class="noStyle">
+                                    <tr>
+                                        <td>
+                                            <div class="timeWrap {{ showTwoDates(item) ? 'twoDates':''}}">
+                                                <time datetime="{{item.Start}}">
+                                                    <span>{{convertDate(item.Start,'MMM')}}</span>
+                                                    <strong>{{convertDate(item.Start,'D')}}</strong>
+                                                    <em>{{convertDate(item.Start,'YYYY')}}</em>
+                                                </time>
+                                                <span class="timeSpacer"> - </span>
+                                                <time datetime="{{item.End}}">
+                                                    <span>{{convertDate(item.End,'MMM')}}</span>
+                                                    <strong>{{convertDate(item.End,'D')}}</strong>
+                                                    <em>{{convertDate(item.End,'YYYY')}}</em>
+                                                </time>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <h4>
+                                                <a href="@Url.EventEdit("xxxx").Replace("xxxx", "{{item.Identifier}}")">{{item.Title}}</a>
+                                            </h4>
+                                            <p class="location" ng-show="item.Location">Location: <b>{{item.Location}}</b></p>
+                                            <p class="location" ng-hide="item.Location">No location specified</p>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                            </td>
+                            <td style="text-align: right;" width="180">
+                                <a target="_blank" ng-hide="item.Url" href="@Url.EventEdit("xxxx").Replace("xxxx", "{{item.Identifier}}")">@T("Public View")</a>
+                                <a target="_blank" ng-show="item.Url" href="{{item.Url}}">@T("Public View")</a>
+                                @T(" | ")
+                                <a href="@Url.EventEdit("xxxx").Replace("xxxx", "{{item.Identifier}}")">@T("Edit")</a>
+                                @T(" | ")
+                                <a href="@Url.EventRemove("xxxx").Replace("xxxx", "{{item.Identifier}}")" itemprop="RemoveUrl UnsafeUrl">@T("Delete")</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="metadata">
+                                Event Categories:
+                                <span class="categoryLabel" ng-repeat="category in item.EventCategoryNames">
+                                    {{category}}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table ng-hide="searchResults.length > 0" style="width:100%;">
+                    <tr>
+                        <td colspan="6">
+                            <div class="info message">No events found.  Would you like to <a href="@Url.EventCreate()">create one?</a></div>
+                        </td>
+                    </tr>
+                </table>
+
+                <div ng-show="numberofPages > 1">
+                    <pagination boundary-links="true"
+                                max-size="6"
+                                num-pages="numberofPages"
+                                total-items="totalItems"
+                                items-per-page="resultsPerPage"
+                                ng-model="currentPage"
+                                rotate="false"
+                                ng-change="setPage()"
+                                class="pager"></pagination>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    <style>
+        .pager li.active a {
+            font-weight: bold;
+            color: #333333;
+            /*CSS3 properties*/
+            text-shadow: rgba(0,0,0,.2) 0px 0px 1px;
+            /*In ie the first couplet sets the alpha value so 00=transparent and ff=opaque)*/
+            filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, startColorstr='#fff5f5f5', endColorstr='#ffd9d9d9');
+            background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(245, 245, 245, 1.0)), to(rgba(217, 217, 217, 1.0)));
+            background: -moz-linear-gradient(top, rgba(245, 245, 245, 1.0), rgba(217, 217, 217, 1.0));
+            box-shadow: inset 0px 0px 1px rgba(255, 255, 255, 1.0), 1px 1px 1px rgba(102, 102, 102, 0.1);
+            -webkit-box-shadow: inset 0px 0px 1px rgba(255, 255, 255, 1.0), 1px 1px 1px rgba(102, 102, 102, 0.1);
+            -moz-box-shadow: inset 0px 0px 1px rgba(255, 255, 255, 1.0), 1px 1px 1px rgba(102, 102, 102, 0.1);
+        }
+    </style>
+}
+@{
+    if (Model.IsSuperAdmin)
+    {
+        <div class="actions">
+            <a class="button primary disabled" style="display: none;" id="DeleteAllEvents">Delete All <span id="TotalEvents"></span> Events</a>
+        </div>
+        <script>
+            var events = [];
+            var deleting = false;
+            var promises = [];
+            var $deleteButton = $('#DeleteAllEvents');
+            function getEvents() {
+                events = [];
+                $.get('@Url.EventIdsForAdmin()', function (data) {
+
+                    if (data.length > 0) {
+                        $('#TotalEvents').text("(" + data.length + ")");
+                        events = data;
+                        $deleteButton.removeClass('disabled');
+                        $deleteButton.show();
+                    } else {
+                        $deleteButton.hide();
+                    }
+                });
+            }
+
+            getEvents();
+
+            var errorInProcess = false;
+
+            $deleteButton.on('click', function () {
+                if ($deleteButton.is('.disabled')) return false;
+                if (confirm("Are you sure you want to delete all events in the database? This cannot be undone.")) {
+                    $deleteButton.addClass('disabled');
+                    if (!deleting) {
+                        deleting = true;
+
+                        $.each(events, function (index, val) {
+                            //---------some async ajax action here per loop ---------
+                            //https://localhost:44322/Admin/Orchard.CalendarEvents/Events/2a2eea978cd94a5d95e6a76e49db0c58/Remove
+
+                            var url = "@Url.RemoveEventsById()";
+                            var q = {
+                                id: val
+                            };
+                            //console.log(url);
+                            //console.log(q);
+                            //return;
+                            if (errorInProcess) {
+                                return;
+                            }
+                            var p = $.ajax({
+                                type: "GET",
+                                url: url,
+                                data: q
+                            });
+                            promises.push(p);
+                            p.done(function (d) {
+                                //updateProcessed();
+                            });
+                            p.fail(function () {
+                                promises = [];
+                                $.ajax.stop();
+                                errorInProcess = true;
+                            });
+                        });
+                        // When all ajax complete..
+                        $.when.apply($, promises).done(function() {
+                            getEvents();
+                            deleting = false;
+                            $deleteButton.removeClass('disabled');
+                            if (errorInProcess) {
+                                alert('Error deleting events');
+                            }
+                            $('#resetSearchButton').click();
+                        });
+
+                        @*$.get('@Url.EventCategoryRemoveAllEventsApi(Model)', function (data) {
+                            $('#TotalEvents').text(data);
+                            deleting = false;
+                            $deleteButton.removeClass('disabled');
+                        });*@
+                        }
+                }
+                return true;
+            });
+        </script>
+    }
+}

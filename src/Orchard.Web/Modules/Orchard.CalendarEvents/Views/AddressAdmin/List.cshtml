@@ -1,0 +1,84 @@
+@using Orchard.CalendarEvents.Extensions;
+@using Orchard.CalendarEvents.Models;
+@using Orchard.ContentManagement
+@using Orchard.Core.Common.Models;
+@model Orchard.CalendarEvents.ViewModels.AddressAdminListViewModel
+@{
+    Layout.Title = T("Manage Addresses").ToString();
+    Style.Require("CalendarStyles");
+    Style.Require("Admin");
+    Script.Require("ShapesBase");
+}
+@Html.ValidationSummary()
+<div class="actions"><a class="right add button primaryAction" href="@Url.AddressCreate()">@T("New Address")</a></div>
+
+@using (Html.BeginFormAntiForgeryPost(Url.Action("List", "Admin", new { area = "Contents", id = "" })))
+{
+    <fieldset>
+        <div class="items">
+            @if (Model.Items.Any())
+            {
+                foreach (AddressPart item in Model.Items)
+                {
+                    var idPart = item.Get<IdentityPart>();
+                    string identifier = idPart.Identifier;
+                    <table class="items">
+                        <tr>
+                            <td>
+                <div @if (string.IsNullOrWhiteSpace(item.MapEmbedCode))
+                            {
+                                <text>class="noMap" title="No Map Embeded"</text>
+                            }
+                            else
+                            {
+                                <text>class="google-maps" </text>             
+                            } >@Html.Raw(item.MapEmbedCode)</div>
+                            </td>
+                            <td>
+                                <h2>@Html.ActionLink(item.LocationName, "Edit", new { id = identifier })</h2>
+                                <p>
+                                    @item.StreetAddress1
+                                    <br />
+                                    @item.City , @item.State @item.Zip
+                                </p>
+                            </td>
+                            <td style="text-align: right;">                                
+                                @Html.ActionLink(T("Edit").ToString(), "Edit", new { id = item.As<IdentityPart>().Identifier }) @T(" | ")
+                                <a href="@Url.AddressRemove(item)" itemprop="RemoveUrl UnsafeUrl">@T("Delete")</a>
+                            </td>
+                        </tr>
+                    </table>
+                }
+            }
+            else
+            {
+                <div class="info message">@T("There are no addresses in the system. Want to <a href=\"{0}\">add one</a>?", Url.AddressCreate())</div>
+            }
+        </div>
+    </fieldset>
+    <style>
+        .items td {
+            vertical-align: top;
+        }
+        .noMap {
+            background: #ececec;
+            padding-bottom: 95%;
+            width: 95%;
+        }
+         .google-maps {
+             background: #ececec;
+             position: relative;
+             padding-bottom: 100%; 
+             height: 0;
+             overflow: hidden;
+         }
+        .google-maps iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+        }
+    </style>
+
+}

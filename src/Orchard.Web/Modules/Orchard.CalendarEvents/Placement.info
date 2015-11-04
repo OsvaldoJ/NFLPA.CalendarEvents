@@ -1,0 +1,75 @@
+﻿<Placement>
+	<Place Fields_ContentPicker_Edit="Content:12"/>
+
+	<Match ContentType="Event">
+		<Place Parts_Title_Edit="-"/>
+	</Match>
+	<Match ContentType="Event">
+		<Place Parts_Event_Edit="Content:10"/>
+		<Match DisplayType="Summary">
+			<Place Parts_Event_Summary="Content:1"/>
+		</Match>
+		<Match DisplayType="Detail">
+			<Place Parts_Event_Detail="Content:10"/>
+		</Match>
+		<Match DisplayType="SummaryAdmin">
+			<Place Parts_Address="-"/>
+			<Place Parts_Event_SummaryAdmin="Content:1"/>
+			<Place Fields_ContentPicker_Edit="Content:2"/>
+		</Match>
+	</Match>
+
+	<Match ContentType="Calendar">
+		<Place Parts_Calendar_Edit="Content:11"/>
+		<Match DisplayType="SummaryAdmin">
+			<Place Parts_Calendar_SummaryAdmin="Content:1"/>
+		</Match>
+		<Match DisplayType="DetailAdmin">
+			<Place Parts_Calendar_DetailAdmin="Content:1"/>
+		</Match>
+		<Match DisplayType="Detail">
+			<Place Parts_Title="-" />
+			<Place Parts_Calendar_Detail="Content:1"/>
+		</Match>
+	</Match>
+
+	<Match ContentType="CalendarWidget">
+		<Place Parts_CalendarWidget="Content"/>
+		<Place Parts_Event_Summary="Content:1"/>
+		<Place Parts_CalendarWidget_Edit="Content:11"/>
+	</Match>
+
+	<Match ContentType="EventCategory">
+		<Place Parts_EventCategory_Edit="Content:11"/>
+		<Match DisplayType="SummaryAdmin">
+			<Place Parts_EventCategory_SummaryAdmin="Content:1" />
+		</Match>
+	</Match>
+
+	<Match ContentType="Address">
+		<Place Parts_Address_Edit="Content:11"/>
+		<Match DisplayType="SummaryAdmin">
+			<Place Parts_Address_SummaryAdmin="Content:1" />
+		</Match>
+	</Match>
+
+	<Match ContentType="RsvpForm">
+		<Place Parts_Rsvp_Edit="Content:11"/>
+		<Place Parts_RsvpResponse="Content:1"/>
+		<Match DisplayType="SummaryAdmin">
+			<Place Parts_Rsvp_SummaryAdmin="Content:1" />
+		</Match>
+	</Match>
+	<Match ContentType="Rsvp">
+		<Place Parts_Rsvp_Edit="Content:11"/>
+		<Match DisplayType="SummaryAdmin">
+			<Place Parts_Rsvp_SummaryAdmin="Content:1" />
+		</Match>
+	</Match>
+
+	<Match ContentType="RsvpFormResponse">
+		<Place Parts_RsvpResponse_Edit="Content:1"/>
+		<Place Parts_Common_Owner_Edit="-"/>
+	</Match>
+	
+</Placement>

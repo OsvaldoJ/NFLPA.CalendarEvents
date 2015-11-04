@@ -1,0 +1,23 @@
+﻿.pickerWrap {
+    display: inline-block;
+}
+.eventDateTimePickerWrap {
+    margin-right: 10px;
+}
+.eventDatePicker {
+    
+}
+.eventTimePicker {
+    
+}
+label.inlineLabel {
+    display: inline;
+    margin-right: 5px;
+}
+.timefield {
+    display: none;
+}
+button.picker__button--today,
+button.picker__button--clear  {
+    color: black;
+}

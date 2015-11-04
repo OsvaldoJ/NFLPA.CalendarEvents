@@ -1,0 +1,13 @@
+﻿Name: Orchard.CalendarEvents
+AntiForgery: enabled
+Author: NFLPA
+Website: https://www.nflpa.com
+Version: 1.9.2
+OrchardVersion: 1.9.2
+Description: Allows users to manage Calendars and Events
+Dependencies: Orchard.Autoroute,Orchard.Alias, Orchard.Tokens,Orchard.Widgets,Orchard.ContentPicker,Orchard.CustomForms,Orchard.PublishLater,Orchard.Fields,Orchard.AngularJS
+Features:
+    Orchard.CalendarEvents:
+        Description: Allows users to manage Calendars and Events.
+		Category: Content
+		

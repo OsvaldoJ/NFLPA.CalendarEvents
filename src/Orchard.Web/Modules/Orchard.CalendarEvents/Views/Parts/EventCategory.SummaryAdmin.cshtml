@@ -1,0 +1,13 @@
+﻿@using Orchard.CalendarEvents.Models
+@using NHibernate.Linq;
+@using Orchard.ContentManagement;
+@using Orchard.Core.Contents;
+@using Orchard.Utility.Extensions;
+@{
+    ContentItem contentItem = Model.ContentItem;
+    var part = (CategoryPart)contentItem.Get(typeof(CategoryPart));
+}
+
+<p>
+    @part.Description
+</p>

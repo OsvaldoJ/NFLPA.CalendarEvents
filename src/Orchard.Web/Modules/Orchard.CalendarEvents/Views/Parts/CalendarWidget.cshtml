@@ -1,0 +1,114 @@
+﻿@using System.Web.UI.WebControls
+@using Orchard.CalendarEvents.Extensions
+@using Orchard.CalendarEvents.Models
+@using NHibernate.Linq
+@using NHibernate.Proxy
+@using Orchard.Autoroute.Models
+@using Orchard.ContentManagement
+@{
+    CalendarPart calendar = Model.Calendar;
+    IEnumerable<EventPart> eventsList = Model.EventsList;
+    //IEnumerable<string> categories = Model.Categories;
+    var routePart = calendar.ContentItem.Get(typeof(AutoroutePart)) as AutoroutePart;
+    string calendarUrl = routePart != null && !string.IsNullOrWhiteSpace(routePart.Path) ? 
+        routePart.Path : Url.Calendar(calendar);
+
+    Style.Require("CalendarStyles");
+}
+
+<div class="clearfix">
+        <i class="fa fa-calendar-o pull-left"></i>
+    <h2>
+        <a href="@calendarUrl">@calendar.Title</a>
+        <em>Upcoming Events</em>
+    </h2>
+</div>
+
+@*<div>
+        Event Types:
+        @foreach (string category in categories)
+        {
+            <span class="badge">@category</span>
+        }
+    </div>*@
+<style>
+    .widget-calendar-widget .fa-calendar-o{
+        font-size:2.4em;
+        margin-right: 10px;
+        /*line-height:1.2em;*/
+    }
+    .widget-calendar-widget h2 em {
+        display: block;
+        font-size: .7em;
+        /*margin-top: 5px;*/
+    }
+
+</style>
+@if (eventsList.Any())
+{
+    <div class="eventsList">
+        @foreach (EventPart contentItem in eventsList)
+        {
+            var autoroute = contentItem.As<AutoroutePart>();
+            var url = contentItem.Url;
+            var startDate = Convert.ToDateTime(contentItem.StartDate);
+            var endDate = Convert.ToDateTime(contentItem.EndDate);
+            if(string.IsNullOrWhiteSpace(url) && autoroute != null && !string.IsNullOrWhiteSpace(autoroute.Path))
+            {
+                url = "/" + autoroute.Path;
+            }
+            <div class="eventItem">
+                <table>
+                    <tr>
+                        <td>
+                            <div class="timeWrap @if (startDate != endDate) {<text>twoDates</text>}">
+                                <time datetime="@startDate.ToString()">
+                                    <span>@startDate.ToString("MMM")</span>
+                                    <strong>@startDate.Day</strong>
+                                    <em>@startDate.Year</em>
+                                </time>
+                                @if (startDate.ToShortDateString() != endDate.ToShortDateString())
+                                {
+                                    <span class="timeSpacer"> - </span>
+                                    <time datetime="@endDate.ToString()">
+                                        <span>@endDate.ToString("MMM")</span>
+                                        <strong>@endDate.Day</strong>
+                                        <em>@endDate.Year</em>
+                                    </time>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <h4>
+                                <a href="@if (string.IsNullOrEmpty(url))
+                                 {
+                                     <text>@Url.Event(contentItem)</text>
+                                 }
+                                 else
+                                 {
+                                     <text>@url</text>
+                                 }">
+                                    @contentItem.Title
+                                </a>
+                            </h4>
+                            @if (string.IsNullOrWhiteSpace(contentItem.AddressLocation))
+                            {
+                                @*<p class="location">Location not provided</p>*@
+                            }
+                            else
+                            {
+                                <p class="location">Location: <b>@contentItem.AddressLocation</b></p>
+                            }
+                        </td>
+                    </tr>
+
+                </table>
+            </div>
+
+        }
+    </div>
+}
+else
+{
+    <p>No upcoming events to display</p>
+}

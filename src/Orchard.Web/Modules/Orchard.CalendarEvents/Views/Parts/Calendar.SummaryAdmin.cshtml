@@ -1,0 +1,10 @@
+﻿@using Orchard.CalendarEvents.Models
+@using Orchard.ContentManagement;
+@{
+    ContentItem contentItem = Model.ContentItem;
+    CalendarPart calendar = (CalendarPart)contentItem.Get(typeof(CalendarPart));
+}
+
+<p>
+   @calendar.ShortDescription
+</p>

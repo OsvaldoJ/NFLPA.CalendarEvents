@@ -1,0 +1,346 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{A47CA5E6-E9FA-4419-B35E-67ECB5C39F07}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Orchard.CalendarEvents</RootNamespace>
+    <AssemblyName>Orchard.CalendarEvents</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <MvcBuildViews>false</MvcBuildViews>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <UseIISExpress>false</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\..\..\lib\newtonsoft.json\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NHibernate, Version=3.3.1.4000, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\lib\nhibernate\NHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.ComponentModel.DataAnnotations">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.DynamicData" />
+    <Reference Include="System.Web.Entity" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web.Mvc, Version=5.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\lib\aspnetmvc\System.Web.Mvc.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Abstractions" />
+    <Reference Include="System.Web.Routing" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\angular-ui\calendar.js" />
+    <Content Include="Scripts\Angular_EventSearch.js" />
+    <Content Include="Scripts\Blob.js" />
+    <Content Include="Scripts\CalendarChosen.js" />
+    <Content Include="Scripts\CalendarWidget.js" />
+    <Content Include="Scripts\chosen.jquery.min.js" />
+    <Content Include="Scripts\editEvent.js" />
+    <Content Include="Scripts\FileSaver.js" />
+    <Content Include="Scripts\fullcalendar\fullcalendar.js" />
+    <Content Include="Scripts\fullcalendar\fullcalendar.min.js" />
+    <Content Include="Scripts\fullcalendar\gcal.js" />
+    <Content Include="Scripts\fullcalendar\lang-all.js" />
+    <Content Include="Scripts\jquery.icalendar.min.js" />
+    <Content Include="Scripts\kendo.ui.core.min.js" />
+    <Content Include="Scripts\legacy.js" />
+    <Content Include="Scripts\moment.min.js" />
+    <Content Include="Scripts\picker.date.js" />
+    <Content Include="Scripts\picker.js" />
+    <Content Include="Scripts\picker.time.js" />
+    <Content Include="Scripts\rsvpFormAdmin.js" />
+    <Content Include="Scripts\ui-bootstrap-tpls-0.11.0.min.js" />
+    <Content Include="Scripts\xlsx.full.min.js" />
+    <Content Include="Styles\CalendarStyles.css" />
+    <Content Include="Styles\CategoryTagStyles.css" />
+    <Content Include="Styles\chosen-sprite%402x.png" />
+    <Content Include="Styles\chosen-sprite.png" />
+    <Content Include="Styles\chosen.css" />
+    <Content Include="Styles\chosen.min.css" />
+    <Content Include="Styles\classic.css" />
+    <Content Include="Styles\classic.date.css" />
+    <Content Include="Styles\classic.time.css" />
+    <Content Include="Styles\default.css" />
+    <Content Include="Styles\default.date.css" />
+    <Content Include="Styles\default.time.css" />
+    <Content Include="Styles\Default\editor.png" />
+    <Content Include="Styles\Default\imagebrowser.png" />
+    <Content Include="Styles\Default\indeterminate.gif" />
+    <Content Include="Styles\Default\loading-image.gif" />
+    <Content Include="Styles\Default\loading.gif" />
+    <Content Include="Styles\Default\loading_2x.gif" />
+    <Content Include="Styles\Default\slider-h.gif" />
+    <Content Include="Styles\Default\slider-v.gif" />
+    <Content Include="Styles\Default\sprite.png" />
+    <Content Include="Styles\Default\sprite_2x.png" />
+    <Content Include="Styles\Default\sprite_kpi.png" />
+    <Content Include="Styles\Default\sprite_kpi_2x.png" />
+    <Content Include="Styles\dropZone.css" />
+    <Content Include="Styles\editEvent.css" />
+    <Content Include="Styles\EventCategoryAdmin.css" />
+    <Content Include="Styles\fullcalendar\fullcalendar.css" />
+    <Content Include="Styles\fullcalendar\fullcalendar.print.css" />
+    <Content Include="Styles\GeneralAdminStyles.css" />
+    <Content Include="Styles\kendo.common.core.min.css" />
+    <Content Include="Styles\kendo.default.min.css" />
+    <Content Include="Styles\rtl.css" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Scripts\Web.config" />
+    <Content Include="Styles\Web.config" />
+    <Content Include="Properties\AssemblyInfo.cs" />
+    <Content Include="Module.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Orchard\Orchard.Framework.csproj">
+      <Project>{2D1D92BB-4555-4CBE-8D0E-63563D6CE4C6}</Project>
+      <Name>Orchard.Framework</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Core\Orchard.Core.csproj">
+      <Project>{9916839C-39FC-4CEB-A5AF-89CA7E87119F}</Project>
+      <Name>Orchard.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orchard.Alias\Orchard.Alias.csproj">
+      <Project>{475B6C45-B27C-438B-8966-908B9D6D1077}</Project>
+      <Name>Orchard.Alias</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orchard.Autoroute\Orchard.Autoroute.csproj">
+      <Project>{66FCCD76-2761-47E3-8D11-B45D0001DDAA}</Project>
+      <Name>Orchard.Autoroute</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orchard.ContentPermissions\Orchard.ContentPermissions.csproj">
+      <Project>{E826F796-8CE3-4B5B-8423-5AA5F81D2FC3}</Project>
+      <Name>Orchard.ContentPermissions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Orchard.Roles\Orchard.Roles.csproj">
+      <Project>{D10AD48F-407D-4DB5-A328-173EC7CB010F}</Project>
+      <Name>Orchard.Roles</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Placement.info" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AdminMenu.cs" />
+    <Compile Include="ApiRoutes.cs" />
+    <Compile Include="Drivers\AddressPartDriver.cs" />
+    <Compile Include="Drivers\CalendarPartDriver.cs" />
+    <Compile Include="Drivers\CalendarWidgetPartDriver.cs" />
+    <Compile Include="Drivers\EventCategoryPartDriver.cs" />
+    <Compile Include="Drivers\EventPartDriver.cs" />
+    <Compile Include="Formatters\iCalFormatResult.cs" />
+    <Compile Include="Handlers\AddressPartHandler.cs" />
+    <Compile Include="Handlers\CalendarPartHandler.cs" />
+    <Compile Include="Handlers\EventCategoryPartHandler.cs" />
+    <Compile Include="Handlers\EventPartHandler.cs" />
+    <Compile Include="Helpers\ColorGenerator.cs" />
+    <Compile Include="Controllers\AddressAdminController.cs" />
+    <Compile Include="Controllers\CalendarAdminController.cs" />
+    <Compile Include="Controllers\CalendarController.cs" />
+    <Compile Include="Controllers\EventAdminController.cs" />
+    <Compile Include="Controllers\EventCategoryAdminController.cs" />
+    <Compile Include="Controllers\EventController.cs" />
+    <Compile Include="Helpers\DateTimeConverter.cs" />
+    <Compile Include="Extensions\SecurityFilterExtension.cs" />
+    <Compile Include="Extensions\UrlHelperExtensions.cs" />
+    <Compile Include="Migrations.cs" />
+    <Compile Include="ViewModels\AddressAdminListViewModel.cs" />
+    <Compile Include="ViewModels\CalendarAdminListViewModel.cs" />
+    <Compile Include="ViewModels\CalendarViewModel.cs" />
+    <Compile Include="ViewModels\CalendarWidgetViewModel.cs" />
+    <Compile Include="Models\CategoryEntry.cs" />
+    <Compile Include="ViewModels\EditCalendarPartViewModel.cs" />
+    <Compile Include="ViewModels\EditEventViewModel.cs" />
+    <Compile Include="ViewModels\EventAdminListViewModel.cs" />
+    <Compile Include="ViewModels\EventCategoriesListViewModel.cs" />
+    <Compile Include="ViewModels\EventSearchViewModel.cs" />
+    <Compile Include="ViewModels\SchedulerEventViewModel.cs" />
+    <Compile Include="Models\AddressPart.cs" />
+    <Compile Include="Models\CalendarPart.cs" />
+    <Compile Include="Models\CategoryPart.cs" />
+    <Compile Include="Models\CalendarCategoryJoinRecord.cs" />
+    <Compile Include="Models\EventPart.cs" />
+    <Compile Include="Models\CalendarWidgetPart.cs" />
+    <Compile Include="Models\EventCategoryJoinRecord.cs" />
+    <Compile Include="Permissions.cs" />
+    <Compile Include="Queries\CalendarFeedQuery.cs" />
+    <Compile Include="ResourceManifest.cs" />
+    <Compile Include="Routes.cs" />
+    <Compile Include="Services\AddressService.cs" />
+    <Compile Include="Services\CalendarService.cs" />
+    <Compile Include="Services\CategoryService.cs" />
+    <Compile Include="Services\EventService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Views\AddressAdmin\Create.cshtml" />
+    <Content Include="Views\AddressAdmin\Edit.cshtml" />
+    <Content Include="Views\AddressAdmin\Item.cshtml" />
+    <Content Include="Views\AddressAdmin\List.cshtml" />
+    <Content Include="Views\AddressAdmin\RenderEventAddressDisplay.cshtml" />
+    <Content Include="Views\CalendarAdmin\Create.cshtml" />
+    <Content Include="Views\CalendarAdmin\Edit.cshtml" />
+    <Content Include="Views\CalendarAdmin\Item.cshtml" />
+    <Content Include="Views\CalendarAdmin\List.cshtml" />
+    <Content Include="Views\EditorTemplates\Fields\EventCategoryField.Autocomplete.cshtml" />
+    <Content Include="Views\EditorTemplates\Fields\EventCategoryField.cshtml" />
+    <Content Include="Views\EditorTemplates\Parts\Address.cshtml" />
+    <Content Include="Views\EditorTemplates\Parts\Calendar.cshtml" />
+    <Content Include="Views\EditorTemplates\Parts\CalendarWidget.cshtml" />
+    <Content Include="Views\EditorTemplates\Parts\Event.cshtml" />
+    <Content Include="Views\EditorTemplates\Parts\EventCategory.cshtml" />
+    <Content Include="Views\EventAdmin\Create.cshtml" />
+    <Content Include="Views\EventAdmin\Edit.cshtml" />
+    <Content Include="Views\EventAdmin\Item.cshtml" />
+    <Content Include="Views\EventAdmin\List.cshtml" />
+    <Content Include="Views\EventCategoryAdmin\Create.cshtml" />
+    <Content Include="Views\EventCategoryAdmin\Edit.cshtml" />
+    <Content Include="Views\EventCategoryAdmin\Item.cshtml" />
+    <Content Include="Views\EventCategoryAdmin\List.cshtml" />
+    <Content Include="Views\Parts\Address.cshtml" />
+    <Content Include="Views\Parts\Calendar.Description.cshtml" />
+    <Content Include="Views\Parts\Calendar.Detail.cshtml" />
+    <Content Include="Views\Parts\Calendar.DetailAdmin.cshtml" />
+    <Content Include="Views\Parts\Calendar.SummaryAdmin.cshtml" />
+    <Content Include="Views\Parts\CalendarWidget.cshtml" />
+    <Content Include="Views\Parts\Event.Detail.cshtml" />
+    <Content Include="Views\Parts\Event.SummaryAdmin.cshtml" />
+    <Content Include="Views\Parts\EventAddressAdmin.cshtml" />
+    <Content Include="Views\Parts\EventCategory.SummaryAdmin.cshtml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\xlsx.full.min.map" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\PublishProfiles\Local IIS.pubxml" />
+    <Content Include="Styles\common\base.less" />
+    <Content Include="Styles\common\calendar.less" />
+    <Content Include="Styles\common\core.less" />
+    <Content Include="Styles\common\forms.less" />
+    <Content Include="Styles\common\ie7.less" />
+    <Content Include="Styles\common\inputs.less" />
+    <Content Include="Styles\common\menu.less" />
+    <Content Include="Styles\common\mixins.less" />
+    <Content Include="Styles\common\notification.less" />
+    <Content Include="Styles\common\panelbar.less" />
+    <Content Include="Styles\common\progressbar.less" />
+    <Content Include="Styles\common\responsivepanel.less" />
+    <Content Include="Styles\common\slider.less" />
+    <Content Include="Styles\common\splitter.less" />
+    <Content Include="Styles\common\tabstrip.less" />
+    <Content Include="Styles\common\toolbar.less" />
+    <Content Include="Styles\common\tooltip.less" />
+    <Content Include="Styles\common\virtuallist.less" />
+    <Content Include="Styles\common\window.less" />
+    <Content Include="Scripts\kendo.ui.core.min.js.map" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'AzureWebsites-Release|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'QA|AnyCPU'">
+    <OutputPath>bin\</OutputPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target> -->
+  <Target Name="AfterBuild" DependsOnTargets="AfterBuildCompiler">
+    <PropertyGroup>
+      <AreasManifestDir>$(ProjectDir)\..\Manifests</AreasManifestDir>
+    </PropertyGroup>
+    <!-- If this is an area child project, uncomment the following line:
+    <CreateAreaManifest AreaName="$(AssemblyName)" AreaType="Child" AreaPath="$(ProjectDir)" ManifestPath="$(AreasManifestDir)" ContentFiles="@(Content)" />
+    -->
+    <!-- If this is an area parent project, uncomment the following lines:
+    <CreateAreaManifest AreaName="$(AssemblyName)" AreaType="Parent" AreaPath="$(ProjectDir)" ManifestPath="$(AreasManifestDir)" ContentFiles="@(Content)" />
+    <CopyAreaManifests ManifestPath="$(AreasManifestDir)" CrossCopy="false" RenameViews="true" />
+    -->
+  </Target>
+  <Target Name="AfterBuildCompiler" Condition="'$(MvcBuildViews)'=='true'">
+    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(ProjectDir)\..\$(ProjectName)" />
+  </Target>
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>45979</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>
+          </IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>True</UseCustomServer>
+          <CustomServerUrl>http://orchard.codeplex.com</CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
